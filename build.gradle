@@ -1,0 +1,54 @@
+plugins {
+    id 'java'
+    id 'net.neoforged.moddev' version '2.0.78'
+}
+
+version = "${mod_version}+1.21.1-neoforge"
+group = mod_group
+base {
+    archivesName = 'diorama'
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+neoForge {
+    version = neo_version
+
+    runs {
+        client {
+            client()
+            systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
+        }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet sourceSets.main
+        }
+    }
+}
+
+dependencies {
+    // The source marks nullable types with JSpecify's @Nullable, which Minecraft 1.21.1 doesn't ship.
+    // Compile-time only: the JVM skips annotations whose class is missing.
+    compileOnly 'org.jspecify:jspecify:1.0.0'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 21
+}
+
+processResources {
+    def props = [version: project.version.toString()]
+    inputs.properties props
+    filesMatching('META-INF/neoforge.mods.toml') {
+        expand props
+    }
+}
+
+jar {
+    from('LICENSE') {
+        rename { "${it}_diorama" }
+    }
+}
